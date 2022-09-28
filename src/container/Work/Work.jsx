@@ -9,20 +9,35 @@ import "./Work.scss";
 
 const Work = () => {
   const [activeFilter, setActiveFilter] = useState("All");
-  const [animateCard, setAnimateCard] = useState({ y: 0, opacity: 1 });
+  const [animateCard, setAnimateCard] = useState([{ y: 0, opacity: 1 }]);
   const [works, setWorks] = useState([]);
-  const [filterWork, setFilterWork] = useState([]);
+  const [filterWorks, setFilterWorks] = useState([]);
 
   useEffect(() => {
     const query = "*[_type == 'works']";
 
     client.fetch(query).then((data) => {
       setWorks(data);
-      setFilterWork(data);
+      setFilterWorks(data);
     });
   }, []);
 
-  const handleWorkFilter = (item) => {};
+  const handleWorkFilter = (item) => {
+    setActiveFilter(item);
+    setAnimateCard([{y: 100, opacity: 0}]);
+
+    setTimeout(() => {
+      setAnimateCard([{y: 0, opacity: 1}]);
+
+      if(item === "All") {
+        setFilterWorks(works)
+      } else {
+        setFilterWorks(works.filter((work) => {
+          return work.tags.includes(item)
+        }))
+      }
+    }, 500)
+  };
 
   return (
     <>
@@ -54,7 +69,7 @@ const Work = () => {
         transition={{ duration: 0.5, delayChildren: 0.5 }}
         className="app__work-portfolio"
       >
-        {filterWork.map((work, index) => (
+        {filterWorks.map((work, index) => (
           <div key={index} className="app__work-item app__flex">
             <div className="app__work-img app__flex">
               <img src={urlFor(work.imgUrl)} alt={work.name} />
@@ -92,7 +107,9 @@ const Work = () => {
 
             <div className="app__work-content app__flex">
               <h4 className="bold-text">{work.title}</h4>
-              <p className="p-text" style={{marginTop: 10}}>{work.description}</p>
+              <p className="p-text" style={{ marginTop: 10 }}>
+                {work.description}
+              </p>
               <div className="app__work-tag app__flex">
                 <p className="p-text">{work.tags[0]}</p>
               </div>
@@ -104,4 +121,4 @@ const Work = () => {
   );
 };
 
-export default AppWrap(Work, 'work');
+export default AppWrap(Work, "work");
